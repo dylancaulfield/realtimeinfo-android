@@ -3,7 +3,7 @@ package ie.dylancaulfield.realtimeinfo.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class LiveDataParent {
 
@@ -25,7 +25,7 @@ public class LiveDataParent {
     private String timestamp;
     @SerializedName("results")
     @Expose
-    private List<LiveData> data = null;
+    private ArrayList<LiveData> data = null;
 
     public String getErrorcode() {
         return errorcode;
@@ -67,11 +67,11 @@ public class LiveDataParent {
         this.timestamp = timestamp;
     }
 
-    public List<LiveData> getData() {
+    public ArrayList<LiveData> getData() {
         return data;
     }
 
-    public void setData(List<LiveData> data) {
+    public void setData(ArrayList<LiveData> data) {
         this.data = data;
     }
 

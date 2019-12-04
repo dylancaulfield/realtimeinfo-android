@@ -126,7 +126,7 @@ public class TLocation {
                 return fullname;
 
             case 2:
-                return displaystopid;
+                return displaystopid.substring(0, displaystopid.length() - 8);
 
             case 3:
                 return fullname.substring(5);

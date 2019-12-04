@@ -60,8 +60,7 @@ public class FavouritesActivity extends AppCompatActivity {
 
             case android.R.id.home: {
 
-                Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(i);
+                finish();
 
             }
 

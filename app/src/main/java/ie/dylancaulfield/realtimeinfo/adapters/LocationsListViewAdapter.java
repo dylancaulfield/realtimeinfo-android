@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filterable;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,7 +43,7 @@ public class LocationsListViewAdapter extends ArrayAdapter<TLocation> {
 
         try {
             getItem(position);
-        } catch (IndexOutOfBoundsException e){
+        } catch (IndexOutOfBoundsException e) {
             return view;
         }
 
@@ -62,13 +63,12 @@ public class LocationsListViewAdapter extends ArrayAdapter<TLocation> {
         operator.setTextColor(getContext().getResources().getColor(R.color.colorAccent, null));
 
         TextView stopid = view.findViewById(R.id.list_location_stopid);
-        // If bus
-        if (tLocation.getOperator().getOperatortype() == 1){
-            stopid.setText(tLocation.getStopid());
-        } else {
-            stopid.setText("");
+        stopid.setText(tLocation.getStopid());
+        stopid.setVisibility(View.VISIBLE);
+        // If not bus
+        if (tLocation.getOperator().getOperatortype() != 1) {
+            stopid.setVisibility(View.INVISIBLE);
         }
-
 
 
         return view;

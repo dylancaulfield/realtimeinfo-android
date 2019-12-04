@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,22 +7,48 @@
     android:background="@android:color/white"
     tools:context=".activites.SearchActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:background="@color/colorPrimary"
-        app:titleTextColor="@android:color/white"
-        android:layout_height="wrap_content"
+    <RelativeLayout
         android:layout_width="match_parent"
-        app:title="Search By ID/Name"
-        android:id="@+id/toolbar_search"
-        app:theme="@style/AppTheme.Toolbar"
+        android:layout_height="wrap_content" >
 
-        />
 
-    <ListView
+        <androidx.appcompat.widget.Toolbar
+            android:background="@color/colorPrimary"
+            app:titleTextColor="@android:color/white"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            app:title="Search By ID/Name"
+            android:id="@+id/toolbar_search"
+            app:theme="@style/AppTheme.Toolbar"
+
+            />
+
+
+        <ListView
+            android:layout_below="@id/toolbar_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/listView_search" />
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:clickable="true"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listView_search" />
+        android:layout_height="300dp"
+        android:background="@color/colorPrimaryDark"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        android:id="@+id/bottomDialog_search"
+        >
 
 
 
-</com.google.android.material.appbar.AppBarLayout>
+
+
+    </RelativeLayout>
+
+
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
