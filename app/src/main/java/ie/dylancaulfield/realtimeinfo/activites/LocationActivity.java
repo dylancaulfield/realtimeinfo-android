@@ -7,23 +7,27 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.widget.ContentLoadingProgressBar;
 
-
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
-
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
-
+import com.google.gson.reflect.TypeToken;
 import com.squareup.seismic.ShakeDetector;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import ie.dylancaulfield.realtimeinfo.R;
 import ie.dylancaulfield.realtimeinfo.adapters.LiveDataListViewAdapter;
@@ -45,6 +49,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
     private Call<LiveDataParent> mCall;
     private ContentLoadingProgressBar mProgressBar;
     private LiveDataListViewAdapter mAdapter;
+    private CoordinatorLayout mCoordinatorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +69,12 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
         toolbar.setTitle(mTLocation.getName());
         setSupportActionBar(toolbar);
 
+        mCoordinatorLayout = findViewById(R.id.parent_coordinator_location);
+
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
+
 
         String endpoint = getResources().getString(R.string.api_endpoint);
         Retrofit retrofit = new Retrofit.Builder()
@@ -105,8 +113,21 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
 
             }
 
-            case R.id.action_info: {
+            case R.id.action_add_fav: {
 
+                addAsFavourite();
+
+                break;
+            }
+
+            case R.id.action_show_map: {
+
+                String formatted = String.format(Locale.ENGLISH,"geo:0,0?q=%f,%f", mTLocation.getLatitude(), mTLocation.getLongitude());
+                Uri uri = Uri.parse(formatted);
+
+                Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                i.setPackage("com.google.android.apps.maps");
+                startActivity(i);
 
                 break;
             }
@@ -125,7 +146,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
         return true;
     }
 
-    private synchronized void fetchData() {
+    private void fetchData() {
 
         mLiveData.clear();
         mAdapter.notifyDataSetChanged();
@@ -137,11 +158,34 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
             @Override
             public void onResponse(Call<LiveDataParent> call, final Response<LiveDataParent> response) {
 
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
 
-                for (LiveData l : response.body().getData()) {
-                    mLiveData.add(l);
-                    mAdapter.notifyDataSetChanged();
-                }
+                        if (response.body() == null){
+                            return;
+                        }
+
+                        mLiveData.addAll(response.body().getData());
+                        mAdapter.notifyDataSetChanged();
+
+
+                        if (response.body().getData().size() == 0) {
+
+                            Snackbar snackbar = Snackbar.make(mCoordinatorLayout, "Nothing due in the next 90 mins", Snackbar.LENGTH_INDEFINITE);
+                            snackbar.setAction("Ok", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                }
+                            });
+                            snackbar.setActionTextColor(getResources().getColor(R.color.colorPrimary));
+                            snackbar.show();
+
+                        }
+
+                    }
+                });
 
                 mProgressBar.setVisibility(View.INVISIBLE);
 
@@ -152,9 +196,8 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
             public void onFailure(Call<LiveDataParent> call, Throwable t) {
 
                 mProgressBar.setVisibility(View.INVISIBLE);
-                CoordinatorLayout coordinatorLayout = findViewById(R.id.parent_coordinator_location);
 
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, "Error retrieving data", Snackbar.LENGTH_INDEFINITE);
+                Snackbar snackbar = Snackbar.make(mCoordinatorLayout, "Error retrieving data", Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction("Ok", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -174,7 +217,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
     public void hearShake() {
 
         Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        if (vibrator != null){
+        if (vibrator != null) {
             vibrator.vibrate(200);
         }
 
@@ -182,10 +225,52 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
 
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void addAsFavourite() {
 
-        fetchData();
+        SharedPreferences preferences = getSharedPreferences("favourites", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        String favsJson = preferences.getString("favourites.json", "[]");
+
+        ArrayList<TLocation> favs = mGson.fromJson(favsJson, new TypeToken<ArrayList<TLocation>>() {
+        }.getType());
+
+        for (TLocation f : favs) {
+
+            if (f.getStopid().equals(mTLocation.getStopid())){
+
+                Snackbar snackbar = Snackbar.make(mCoordinatorLayout, "This is already a favourite", Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction("Ok", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                });
+                snackbar.setActionTextColor(getResources().getColor(R.color.colorPrimary));
+                snackbar.show();
+                return;
+
+            }
+
+        }
+
+        favs.add(mTLocation);
+
+        String newJson = mGson.toJson(favs);
+        editor.putString("favourites.json", newJson);
+        editor.commit();
+
+        Snackbar snackbar = Snackbar.make(mCoordinatorLayout, "Added to favourites", Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAction("Ok", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        snackbar.setActionTextColor(getResources().getColor(R.color.colorPrimary));
+        snackbar.show();
+
+
     }
+
 }

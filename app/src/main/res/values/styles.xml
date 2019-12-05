@@ -7,6 +7,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
+        <item name="android:actionOverflowButtonStyle">@style/OverFlow</item>
+
     </style>
 
     <style name="AppTheme.Toolbar" parent="AppTheme">
@@ -15,6 +17,10 @@
         <!--This line changes the color of icons in toolbar (back, overflow menu icons)-->
         <item name="android:textColorSecondary">@android:color/white</item>
 
+    </style>
+
+    <style name="OverFlow" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_menu_white_24dp</item>
     </style>
 
 </resources>

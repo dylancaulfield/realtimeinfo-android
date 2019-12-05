@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import ie.dylancaulfield.realtimeinfo.R;
 import ie.dylancaulfield.realtimeinfo.adapters.LocationsListViewAdapter;
@@ -38,6 +39,7 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
     private String mSearchText = "";
     private String mOperator = "";
     private BottomSheetBehavior mBehaviour;
+    private Thread mFilterThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,7 +184,12 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
         mTLocations.clear();
         mListViewAdapter.notifyDataSetChanged();
 
-        new Thread(new Runnable() {
+        if (mFilterThread != null){
+            mFilterThread.interrupt();
+        }
+
+        mFilterThread = new Thread(new Runnable() {
+
             @Override
             public void run() {
 
@@ -192,8 +199,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
 
                     final TLocation location = locations.get(i);
 
-                    boolean nameIdFilter = location.getName().toLowerCase().contains(mSearchText) ||
-                            location.getStopid().toLowerCase().contains(mSearchText);
+                    boolean nameIdFilter = location.getName().toLowerCase().contains(mSearchText.trim()) ||
+                            location.getStopid().toLowerCase().contains(mSearchText.trim());
 
                     boolean operatorFilter = location.getOperator().getName().contains(mOperator);
 
@@ -210,7 +217,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
                 }
 
             }
-        }).start();
+        });
+        mFilterThread.start();
 
 
     }

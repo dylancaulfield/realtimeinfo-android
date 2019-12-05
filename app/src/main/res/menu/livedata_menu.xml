@@ -9,9 +9,14 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_info"
+        android:id="@+id/action_add_fav"
         android:icon="@drawable/ic_info_outline_white_24dp"
-        android:title="Info"
-        app:showAsAction="always" />
+        android:title="Add To Favourites"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_show_map"
+        android:title="Show On Map"
+        app:showAsAction="never" />
 
 </menu>

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ie.dylancaulfield.realtimeinfo.R;
@@ -20,11 +21,13 @@ import ie.dylancaulfield.realtimeinfo.models.TLocation;
 public class LiveDataListViewAdapter extends ArrayAdapter<LiveData> {
 
     private LayoutInflater mInflater;
+    private ArrayList<LiveData> mData;
 
-    public LiveDataListViewAdapter(Context context, int textViewResourceId, List<LiveData> list) {
+    public LiveDataListViewAdapter(Context context, int textViewResourceId, ArrayList<LiveData> list) {
         super(context, textViewResourceId, list);
 
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mData = list;
 
     }
 
@@ -32,30 +35,23 @@ public class LiveDataListViewAdapter extends ArrayAdapter<LiveData> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        View view = convertView;
-        if (view == null) {
-            view = mInflater.inflate(R.layout.list_livedata, parent, false);
+        if (convertView == null) {
+            convertView = mInflater.inflate(R.layout.list_livedata, parent, false);
         }
 
-        try {
-            getItem(position);
-        } catch (IndexOutOfBoundsException e) {
-            return view;
-        }
+        LiveData liveData = mData.get(position);
 
-        LiveData liveData = getItem(position);
-
-        TextView destination = view.findViewById(R.id.list_livedata_destination);
+        TextView destination = convertView.findViewById(R.id.list_livedata_destination);
         destination.setText(liveData.getDestination());
 
-        TextView time = view.findViewById(R.id.list_livedata_time);
+        TextView time = convertView.findViewById(R.id.list_livedata_time);
         time.setText(liveData.getDuetime());
 
-        TextView route = view.findViewById(R.id.list_livedata_route);
+        TextView route = convertView.findViewById(R.id.list_livedata_route);
         route.setText(liveData.getRoute());
 
 
-        return view;
+        return convertView;
 
     }
 
