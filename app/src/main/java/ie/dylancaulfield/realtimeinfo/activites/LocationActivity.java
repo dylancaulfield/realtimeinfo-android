@@ -257,7 +257,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
 
         String newJson = mGson.toJson(favs);
         editor.putString("favourites.json", newJson);
-        editor.commit();
+        editor.apply();
 
         Snackbar snackbar = Snackbar.make(mCoordinatorLayout, "Added to favourites", Snackbar.LENGTH_INDEFINITE);
         snackbar.setAction("Ok", new View.OnClickListener() {
