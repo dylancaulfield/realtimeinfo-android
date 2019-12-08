@@ -180,6 +180,10 @@ public class FavouritesActivity extends AppCompatActivity implements ListView.On
             public void onClick(DialogInterface dialog, int which) {
 
 
+                if (input.getText().toString().trim().equals("")){
+                    return;
+                }
+
                 SharedPreferences preferences = getSharedPreferences("favourites", MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
 
