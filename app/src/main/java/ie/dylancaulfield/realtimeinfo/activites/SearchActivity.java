@@ -8,6 +8,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,7 +40,6 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
     private String mSearchText = "";
     private String mOperator = "";
     private BottomSheetBehavior mBehaviour;
-    private Thread mFilterThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -181,45 +181,61 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
     // Combine filters and update data set
     private void updateDataSet() {
 
-        mTLocations.clear();
-        mListViewAdapter.notifyDataSetChanged();
-
-        if (mFilterThread != null){
-            mFilterThread.interrupt();
-        }
-
-        mFilterThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-
-                ArrayList<TLocation> locations = new ArrayList<>(mTLocationParent.getLocations());
-
-                for (int i = 0; i < locations.size(); i++) {
-
-                    final TLocation location = locations.get(i);
-
-                    boolean nameIdFilter = location.getName().toLowerCase().contains(mSearchText.trim()) ||
-                            location.getStopid().toLowerCase().contains(mSearchText.trim());
-
-                    boolean operatorFilter = location.getOperator().getName().contains(mOperator);
-
-                    if (nameIdFilter && operatorFilter) {
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mTLocations.add(location);
-                                mListViewAdapter.notifyDataSetChanged();
-                            }
-                        });
-                    }
-                }
-
-            }
-        });
-        mFilterThread.start();
+        FilterTask task = new FilterTask();
+        task.execute(mSearchText);
 
 
     }
+
+    private class FilterTask extends AsyncTask<String, Void, ArrayList<TLocation>> {
+
+        @Override
+        protected ArrayList<TLocation> doInBackground(String... strings) {
+
+            ArrayList<TLocation> filterLocations = new ArrayList<>();
+
+            for (TLocation location : mTLocationParent.getLocations()) {
+
+                if (isCancelled()) {
+                    return null;
+                }
+
+                boolean shouldAdd = false;
+
+                for (String searchText : strings) {
+
+                    String lowerCase = searchText.toLowerCase();
+
+                    if (location.getName().toLowerCase().contains(lowerCase)) {
+                        shouldAdd = true;
+                    }
+
+                    if (location.getStopid().toLowerCase().contains(lowerCase)) {
+                        shouldAdd = true;
+                    }
+
+                }
+
+                if (shouldAdd) {
+                    filterLocations.add(location);
+                }
+
+
+            }
+
+
+            return filterLocations;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<TLocation> locations) {
+
+            mTLocations.clear();
+            mTLocations.addAll(locations);
+            mListViewAdapter.notifyDataSetChanged();
+
+        }
+
+    }
+
 }
