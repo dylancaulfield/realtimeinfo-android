@@ -105,10 +105,9 @@ public class FavouritesActivity extends AppCompatActivity implements ListView.On
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
         TLocation tLocation = mFavourites.get(position);
-        String json = mGson.toJson(tLocation);
 
         Intent i = new Intent(getApplicationContext(), LocationActivity.class);
-        i.putExtra("tlocation", json);
+        i.putExtra("stopid", tLocation.getStopid());
         startActivity(i);
 
 

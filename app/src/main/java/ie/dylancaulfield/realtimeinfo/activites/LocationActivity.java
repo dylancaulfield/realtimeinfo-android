@@ -17,15 +17,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.seismic.ShakeDetector;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -34,6 +33,7 @@ import ie.dylancaulfield.realtimeinfo.adapters.LiveDataListViewAdapter;
 import ie.dylancaulfield.realtimeinfo.models.LiveData;
 import ie.dylancaulfield.realtimeinfo.models.LiveDataParent;
 import ie.dylancaulfield.realtimeinfo.models.TLocation;
+import ie.dylancaulfield.realtimeinfo.models.TLocationParent;
 import ie.dylancaulfield.realtimeinfo.utility.LiveDataService;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -60,8 +60,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
         ShakeDetector sd = new ShakeDetector(this);
         sd.start(sensorManager);
 
-        String json = getIntent().getStringExtra("tlocation");
-        mTLocation = mGson.fromJson(json, TLocation.class);
+        getTLocationFromIntent();
 
         mProgressBar = findViewById(R.id.progressBar_livedata);
 
@@ -122,7 +121,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
 
             case R.id.action_show_map: {
 
-                String formatted = String.format(Locale.ENGLISH,"geo:0,0?q=%f,%f", mTLocation.getLatitude(), mTLocation.getLongitude());
+                String formatted = String.format(Locale.ENGLISH, "geo:0,0?q=%f,%f", mTLocation.getLatitude(), mTLocation.getLongitude());
                 Uri uri = Uri.parse(formatted);
 
                 Intent i = new Intent(Intent.ACTION_VIEW, uri);
@@ -162,7 +161,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
                     @Override
                     public void run() {
 
-                        if (response.body() == null){
+                        if (response.body() == null) {
                             return;
                         }
 
@@ -237,7 +236,7 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
 
         for (TLocation f : favs) {
 
-            if (f.getStopid().equals(mTLocation.getStopid())){
+            if (f.getStopid().equals(mTLocation.getStopid())) {
 
                 Snackbar snackbar = Snackbar.make(mCoordinatorLayout, "This is already a favourite", Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction("Ok", new View.OnClickListener() {
@@ -269,6 +268,27 @@ public class LocationActivity extends AppCompatActivity implements ShakeDetector
         });
         snackbar.setActionTextColor(getResources().getColor(R.color.colorPrimary));
         snackbar.show();
+
+
+    }
+
+    private void getTLocationFromIntent() {
+
+        String stopid = getIntent().getStringExtra("stopid");
+        InputStream inputStream = getResources().openRawResource(R.raw.locations);
+        InputStreamReader reader = new InputStreamReader(inputStream);
+
+        TLocationParent parent = mGson.fromJson(reader, TLocationParent.class);
+
+        for (TLocation location : parent.getLocations()) {
+
+            if (location.getStopid().equals(stopid)) {
+                mTLocation = location;
+
+                return;
+            }
+
+        }
 
 
     }

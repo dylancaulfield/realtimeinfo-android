@@ -170,10 +170,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
             return;
         }
 
-        String json = mGson.toJson(location);
-
         Intent i = new Intent(getApplicationContext(), LocationActivity.class);
-        i.putExtra("tlocation", json);
+        i.putExtra("stopid", location.getStopid());
         startActivity(i);
 
     }
