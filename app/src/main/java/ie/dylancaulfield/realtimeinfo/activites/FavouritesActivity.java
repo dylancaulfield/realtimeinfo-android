@@ -2,21 +2,28 @@ package ie.dylancaulfield.realtimeinfo.activites;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -133,6 +140,13 @@ public class FavouritesActivity extends AppCompatActivity implements ListView.On
 
             }
 
+            case R.id.action_rename: {
+
+                renameFavourite();
+                break;
+
+            }
+
         }
 
 
@@ -149,7 +163,46 @@ public class FavouritesActivity extends AppCompatActivity implements ListView.On
 
         String newJson = mGson.toJson(mFavourites);
         editor.putString("favourites.json", newJson);
-        editor.commit();
+        editor.apply();
+
+    }
+
+    private void renameFavourite() {
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(FavouritesActivity.this);
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_edittext, null);
+
+        final TextInputEditText input = view.findViewById(R.id.textinput_rename_favourite);
+        builder.setView(view);
+
+        builder.setPositiveButton("Rename", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+
+                SharedPreferences preferences = getSharedPreferences("favourites", MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+
+                mFavourites.get(mIndexOfLongHold).setFullname(input.getText().toString());
+                mFavourites.get(mIndexOfLongHold).setDisplaystopid(input.getText().toString());
+                mAdapter.notifyDataSetChanged();
+
+                String newJson = mGson.toJson(mFavourites);
+                editor.putString("favourites.json", newJson);
+                editor.apply();
+
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        builder.show();
 
     }
 
